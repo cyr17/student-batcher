@@ -4,10 +4,12 @@ package com.example.demo.controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,11 +19,13 @@ import com.example.demo.repository.UserRepository;
 
 
 
+
 @RestController
 @RequestMapping("/api/users")
 
 public class UserController {
 
+    @Autowired
     private final UserRepository userRepository;
 
     public UserController(UserRepository userRepository)
@@ -50,9 +54,21 @@ public class UserController {
         return userRepository.findById(id);
     }
     
-    @GetMapping("/update")
-    public String updateUser() {
-        return "Updating User";
+
+    @PutMapping("/{id}")
+    public String updateUser(@PathVariable String id, @RequestBody User updatedUser) {
+        Optional<User> existingUserRef = userRepository.findById(id);
+        if(existingUserRef.isPresent()){
+            User existingUser = existingUserRef.get();
+            existingUser.setName(updatedUser.getName());
+            existingUser.setSubjects(updatedUser.getSubjects());
+            existingUser.setAvailability(updatedUser.getAvailability());
+            userRepository.save(existingUser);
+            return "User Updated Successfully!";
+        }else{
+            return "User Not Found!";
+        }
+
     }
     
 
@@ -61,4 +77,5 @@ public class UserController {
         userRepository.deleteById(id);
         return "User deleted Successfully!";
     }
+
 }
