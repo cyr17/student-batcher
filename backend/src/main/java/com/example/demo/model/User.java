@@ -12,13 +12,13 @@ public class User {
     private String id;
     private String name;
     private String email;
-    private List<String> subjects; 
+    private List<Subject> subjects; 
     private List<String> availability; 
 
     public User() {}
 
     
-    public User(String name, String email, List<String> subjects, List<String> availability) {
+    public User(String name, String email, List<Subject> subjects, List<String> availability) {
         this.name = name;
         this.email = email;
         this.subjects = subjects;
@@ -34,8 +34,8 @@ public class User {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public List<String> getSubjects() { return subjects; }
-    public void setSubjects(List<String> subjects) { this.subjects = subjects; }
+    public List<Subject> getSubjects() { return subjects; }
+    public void setSubjects(List<Subject> subjects) { this.subjects = subjects; }
 
     public List<String> getAvailability() { return availability; }
     public void setAvailability(List<String> availability) { this.availability = availability; }

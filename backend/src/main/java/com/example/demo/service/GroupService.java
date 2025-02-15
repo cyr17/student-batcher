@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.model.Group;
+import com.example.demo.model.Subject;
 import com.example.demo.model.User;
-import com.example.demo.repository.GroupRepository;
 import com.example.demo.repository.UserRepository;
 
 @Service
@@ -20,52 +18,120 @@ public class GroupService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private GroupRepository groupRepository;
-
-    public List<Group> matchUsersIntoGroups(int maxGroupSize){
+    public List<List<User>> matchUsersBySubjectAndAvailability() {
+        // Get all users from the repository
         List<User> users = userRepository.findAll();
-
-        // Group users by subjects
-         Map<String, List<User>> usersBySubject = users.stream()
-                .flatMap(user -> user.getSubjects().stream().map(subject -> Map.entry(subject, user)))
-                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
-
         
-        List<Group> studyGroups = new ArrayList<>();
+        // Create a list to hold the groups
+        List<List<User>> matchedGroups = new ArrayList<>();
 
-         // Step 2: Within each subject, group users by overlapping availability
-        for (Map.Entry<String, List<User>> entry : usersBySubject.entrySet()) {
-            String subject = entry.getKey();
-            List<User> subjectUsers = entry.getValue();
+        // Step 1: Scenario 1: Group users by similar subjects first
+        Map<String, List<User>> usersBySubject = groupUsersBySubject(users);
 
-            // Map of timeslots -> list of users available at that time
-            Map<String, List<User>> timeSlotGroups = new HashMap<>();
-
-            for (User user : subjectUsers) {
-                for (String timeSlot : user.getAvailability()) {
-                    timeSlotGroups.computeIfAbsent(timeSlot, k -> new ArrayList<>()).add(user);
-                }
+        // Log the grouped users by subject
+        System.out.println("Grouped users by subject:");
+        for (String subject : usersBySubject.keySet()) {
+            System.out.println("Subject: " + subject);
+            for (User user : usersBySubject.get(subject)) {
+                System.out.println(user.getName() + " (" + user.getEmail() + ")");
             }
+        }
 
-            // Step 3: Create groups with users who share time slots
-            for (Map.Entry<String, List<User>> timeSlotEntry : timeSlotGroups.entrySet()) {
-                String timeSlot = timeSlotEntry.getKey();
-                List<User> availableUsers = timeSlotEntry.getValue();
+        // Step 2: Match users based on overlapping availability
+        Map<String, List<User>> ungroupedUsers = new HashMap<>();
+        for (List<User> subjectGroup : usersBySubject.values()) {
+            // Group users by availability
+            Map<String, List<User>> availabilityGroups = groupUsersByAvailability(subjectGroup);
 
-                // Split into groups of maxGroupSize
-                for (int i = 0; i < availableUsers.size(); i += maxGroupSize) {
-                    List<User> groupUsers = availableUsers.subList(i, Math.min(i + maxGroupSize, availableUsers.size()));
-                    List<String> userIds = groupUsers.stream().map(User::getId).collect(Collectors.toList());
+            // Create groups based on availability and subject
+            for (List<User> availabilityGroup : availabilityGroups.values()) {
+                List<List<User>> createdGroups = createGroups(availabilityGroup);
 
-                    Group group = new Group(subject, timeSlot, userIds);
-                    studyGroups.add(group);
+                // Filter out groups with fewer than 2 members
+                createdGroups.removeIf(group -> group.size() < 2);
+
+                // Add valid groups to matchedGroups
+                matchedGroups.addAll(createdGroups);
+
+                // Track users who couldn't be grouped
+                for (User user : availabilityGroup) {
+                    if (!isUserGrouped(user, createdGroups)) {
+                        ungroupedUsers.computeIfAbsent("ungrouped", k -> new ArrayList<>()).add(user);
+                    }
                 }
             }
         }
 
-        // Save groups to database
-        return groupRepository.saveAll(studyGroups);
         
+
+        // Log the final matched groups (only those with 2 or more members)
+        System.out.println("Final matched groups:");
+        for (List<User> group : matchedGroups) {
+            if (group.size() >= 2) { // Log only groups with at least 2 members
+                System.out.println("Group:");
+                for (User user : group) {
+                    System.out.println(user.getName() + " (" + user.getEmail() + ")");
+                }
+            }
+        }
+
+        return matchedGroups;
+    }
+
+    // Step 1 Helper: Group users by subject
+    private Map<String, List<User>> groupUsersBySubject(List<User> users) {
+        Map<String, List<User>> usersBySubject = new HashMap<>();
+
+        for (User user : users) {
+            for (Subject subject : user.getSubjects()) {
+                String subjectName = subject.getName();
+                if (!usersBySubject.containsKey(subjectName)) {
+                    usersBySubject.put(subjectName, new ArrayList<>());
+                }
+                usersBySubject.get(subjectName).add(user);
+            }
+        }
+
+        return usersBySubject;
+    }
+
+    // Step 2 Helper: Group users by availability
+    private Map<String, List<User>> groupUsersByAvailability(List<User> users) {
+        Map<String, List<User>> availabilityGroups = new HashMap<>();
+
+        for (User user : users) {
+            for (String availability : user.getAvailability()) {
+                if (!availabilityGroups.containsKey(availability)) {
+                    availabilityGroups.put(availability, new ArrayList<>());
+                }
+                availabilityGroups.get(availability).add(user);
+            }
+        }
+
+        return availabilityGroups;
+    }
+
+    // Helper method to create groups based on availability and subject
+    private List<List<User>> createGroups(List<User> availabilityGroup) {
+        List<List<User>> groups = new ArrayList<>();
+        int groupSize = availabilityGroup.size(); 
+
+        for (int i = 0; i < availabilityGroup.size(); i += groupSize) {
+            int end = Math.min(i + groupSize, availabilityGroup.size());
+            List<User> group = availabilityGroup.subList(i, end);
+            groups.add(group);
+        }
+
+        return groups;
+    }
+
+    // Helper method to check if a user is grouped
+    private boolean isUserGrouped(User user, List<List<User>> createdGroups) {
+        for (List<User> group : createdGroups) {
+            if (group.contains(user)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

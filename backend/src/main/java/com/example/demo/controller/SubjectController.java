@@ -21,11 +21,15 @@ import com.example.demo.repository.SubjectRepository;
 @RequestMapping("/api/subjects")
 public class SubjectController {
     
-    private SubjectRepository subjectRepository;
+    private final SubjectRepository subjectRepository;
+
+    public SubjectController(SubjectRepository subjectRepository) {
+        this.subjectRepository = subjectRepository;
+    }
 
     //CREATE
     @PostMapping("/create")
-    public Subject postMethodName(@RequestBody Subject subject) {
+    public Subject createSubject(@RequestBody Subject subject) {
         
         return subjectRepository.save(subject);
     }

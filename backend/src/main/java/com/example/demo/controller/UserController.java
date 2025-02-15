@@ -34,10 +34,6 @@ public class UserController {
     }
 
     // CRUD OPERATIONS
-    @GetMapping("/test")
-    public String testEndpoint( ) {
-        return "Study Groupp BAtcher Api is running!!";
-    }
 
     @PostMapping("/create")
     public User createUser(@RequestBody User user) {
@@ -71,6 +67,8 @@ public class UserController {
 
     }
     
+
+    // TODO: need to return no if user is not found
 
     @DeleteMapping("/{id}")
     public String deleteUser(@PathVariable String id){

@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Group;
+import com.example.demo.model.User;
 import com.example.demo.repository.GroupRepository;
 import com.example.demo.service.GroupService;
 
@@ -19,10 +19,15 @@ import com.example.demo.service.GroupService;
 @RequestMapping("/api/groups")
 public class GroupController {
 
-    private GroupRepository groupRepository;
+    private final GroupRepository groupRepository;
 
-    private GroupService groupService;
+    private final GroupService groupService;
 
+
+    public GroupController(GroupRepository groupRepository, GroupService groupService) {
+        this.groupRepository = groupRepository;
+        this.groupService = groupService;
+    }
     
     @PostMapping("/create")
     public Group createGroup(@RequestBody Group group) {
@@ -39,9 +44,9 @@ public class GroupController {
         return groupRepository.findById(id);
     }
 
-    @PostMapping("/match")
-    public List<Group> matchUsersIntoGroups(@RequestParam(defaultValue = "3") int maxSize) {
-        return groupService.matchUsersIntoGroups(maxSize);
+    @GetMapping("/match")
+    public List<List<User>> getMatchedGroups() {
+        return groupService.matchUsersBySubjectAndAvailability();
     }
 
     @DeleteMapping("/{id}")
