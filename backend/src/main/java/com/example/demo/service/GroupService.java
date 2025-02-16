@@ -28,24 +28,22 @@ public class GroupService {
     public List<List<User>> matchUsersBySubjectAndAvailability() {
         List<User> users = userRepository.findAll();
         List<List<User>> matchedGroups = new ArrayList<>();
+
+        //group by subject first
         Map<String, List<User>> usersBySubject = groupUsersBySubject(users);
 
-        Map<String, List<User>> ungroupedUsers = new HashMap<>();
         for (List<User> subjectGroup : usersBySubject.values()) {
+
+            //group these groups by availability
             Map<String, List<User>> availabilityGroups = groupUsersByAvailability(subjectGroup);
 
             for (List<User> availabilityGroup : availabilityGroups.values()) {
                 List<List<User>> createdGroups = createGroups(availabilityGroup);
 
+                // remove groups with less than 2 users
                 createdGroups.removeIf(group -> group.size() < 2);
 
                 matchedGroups.addAll(createdGroups);
-
-                for (User user : availabilityGroup) {
-                    if (!isUserGrouped(user, createdGroups)) {
-                        ungroupedUsers.computeIfAbsent("ungrouped", k -> new ArrayList<>()).add(user);
-                    }
-                }
             }
         }
 
@@ -54,9 +52,7 @@ public class GroupService {
 
     public List<Group> allocateGroups() {
         
-        System.out.println("HIT");
         List<List<User>> matchedGroups = matchUsersBySubjectAndAvailability();
-        System.out.println(matchedGroups);
         List<Group> savedGroups = new ArrayList<>();
     
         for (List<User> group : matchedGroups) {
@@ -70,15 +66,21 @@ public class GroupService {
             List<String> commonTimeSlots = findCommonTimeSlots(group);
             if (commonTimeSlots.isEmpty()) continue; // Skip if no common availability
     
-            String subject = commonSubjects.get(0); // Pick one common subject
-            String timeSlot = commonTimeSlots.get(0); // Pick one common time slot
+            // Pick the common subject
+            String subject = commonSubjects.get(0);
+            
+            // Pick the common time slot
+            String timeSlot = commonTimeSlots.get(0); 
     
+            //fetch user ids
             List<String> userIds = group.stream().map(User::getId).collect(Collectors.toList());
     
+            //check if group combination already exists
             Optional<Group> existingGroup = groupRepository.findAll().stream()
                 .filter(g -> g.getUserIds().containsAll(userIds) && g.getUserIds().size() == userIds.size())
                 .findFirst();
     
+            //create a new group
             if (existingGroup.isEmpty()) {
                 Group newGroup = new Group(subject, timeSlot, userIds);
                 savedGroups.add(groupRepository.save(newGroup));
@@ -87,7 +89,7 @@ public class GroupService {
         return savedGroups;
     }
 
-    
+    // USERS WITH SUBJECT DATA TO --> "SUBJECT" : [USER1..,USERN]
     private Map<String, List<User>> groupUsersBySubject(List<User> users) {
         Map<String, List<User>> usersBySubject = new HashMap<>();
         for (User user : users) {
@@ -98,6 +100,8 @@ public class GroupService {
         return usersBySubject;
     }
 
+    
+    // USERS WITH AVAILABILITY DATA TO --> "TIMESLOT" : [USER1..,USERN]
     private Map<String, List<User>> groupUsersByAvailability(List<User> users) {
         Map<String, List<User>> availabilityGroups = new HashMap<>();
         for (User user : users) {
@@ -116,10 +120,6 @@ public class GroupService {
             groups.add(availabilityGroup.subList(i, end));
         }
         return groups;
-    }
-
-    private boolean isUserGrouped(User user, List<List<User>> createdGroups) {
-        return createdGroups.stream().anyMatch(group -> group.contains(user));
     }
 
     private List<String> findCommonTimeSlots(List<User> users) {
