@@ -2,6 +2,8 @@
 
 Study Group Batcher is a platform that connects users based on their study subjects and availability. The project consists of a separate backend and frontend.
 
+## Tech Stack - Java SpringBoot
+
 ## Features
 
 - **User Registration:** Users can register with their preferred study subjects and availability.
