@@ -14,15 +14,12 @@ import com.example.demo.model.Group;
 import com.example.demo.model.User;
 import com.example.demo.repository.GroupRepository;
 import com.example.demo.service.GroupService;
-
 @RestController
 @RequestMapping("/api/groups")
 public class GroupController {
 
     private final GroupRepository groupRepository;
-
     private final GroupService groupService;
-
 
     public GroupController(GroupRepository groupRepository, GroupService groupService) {
         this.groupRepository = groupRepository;
@@ -46,14 +43,21 @@ public class GroupController {
 
     @GetMapping("/match")
     public List<List<User>> getMatchedGroups() {
+        
+        System.out.println("HIT in api");
         return groupService.matchUsersBySubjectAndAvailability();
+    }
+
+    @PostMapping("/allocate")
+    public List<Group> allocateGroups() {
+        
+        System.out.println("HIT in api");
+        return groupService.allocateGroups();
     }
 
     @DeleteMapping("/{id}")
     public String deleteGroup(@PathVariable String id) {
         groupRepository.deleteById(id);
-        return "Group deleted successfully!";
+        return "Group deleted successfully!!";
     }
-
-    
 }
