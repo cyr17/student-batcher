@@ -3,8 +3,9 @@
 This API provides functionality for managing users, subjects, and groups.
 
 ## User
-- **Endpoint**: `/api/user`
-- **Methods**: `GET`, `POST`, `PUT`, `DELETE`
+
+### Endpoint: `/api/user`
+- **Methods**: `GET`, `POST`
 - **Description**: 
     - `GET`: Retrieve all user information.
     - `POST`: Create a new user.
@@ -12,11 +13,13 @@ This API provides functionality for managing users, subjects, and groups.
     - `GET`: Returns all user details in JSON format.
     - `POST`: Returns the created user object.
 
-- **Endpoint**: `/api/user/{id}`
+### Endpoint: `/api/user/{id}`
+
+- **Methods**: `GET`, `PUT`, `DELETE`
+- **Description**: 
     - `GET`: Retrieve user information for the id requested.
     - `PUT`: Update existing user information.
     - `DELETE`: Remove a user.
-
 
 - **Expected Output**:
     - `GET`: Returns the user details in JSON format.
