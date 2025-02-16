@@ -28,7 +28,7 @@ public class SubjectController {
     }
 
     //CREATE
-    @PostMapping("/create")
+    @PostMapping("/")
     public Subject createSubject(@RequestBody Subject subject) {
         
         return subjectRepository.save(subject);

@@ -28,7 +28,7 @@ public class GroupController {
         this.groupService = groupService;
     }
     
-    @PostMapping("/create")
+    @PostMapping("/")
     public Group createGroup(@RequestBody Group group) {
         return groupRepository.save(group);
     }

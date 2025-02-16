@@ -35,7 +35,7 @@ public class UserController {
 
     // CRUD OPERATIONS
 
-    @PostMapping("/create")
+    @PostMapping("/")
     public User createUser(@RequestBody User user) {
         return userRepository.save(user);
     }
