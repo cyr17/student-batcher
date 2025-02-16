@@ -30,23 +30,23 @@ This API provides functionality for managing users, subjects, and groups.
   ### Endpoint: `/api/subjects`
    - **Methods**: `GET`, `POST`
    - **Description**: 
-        - `GET`: Retrieve all subject information.
-        - `POST`: Create a new subject.
+     - `GET`: Retrieve all subject information.
+     - `POST`: Create a new subject.
    - **Expected Output**:
-        - `GET`: Returns all subject details in JSON format.
-        - `POST`: Returns the created subject object.
+     - `GET`: Returns all subject details in JSON format.
+     - `POST`: Returns the created subject object.
 
  ### Endpoint: `/api/subjects/{id}`
   - **Methods**: `GET`, `PUT`, `DELETE`
   - **Description**: 
-        - `GET`: Retrieve subject information for the id requested.
-        - `PUT`: Update existing subject information.
-        - `DELETE`: Remove a subject.
+    - `GET`: Retrieve subject information for the id requested.
+    - `PUT`: Update existing subject information.
+    - `DELETE`: Remove a subject.
 
   - **Expected Output**:
-        - `GET`: Returns the subject details in JSON format.
-        - `PUT`: Returns updated subject information.
-        - `DELETE`: Returns a success message.
+     - `GET`: Returns the subject details in JSON format.
+     - `PUT`: Returns updated subject information.
+     - `DELETE`: Returns a success message.
 
 ## Group
   ### Endpoint: `/api/groups`
@@ -81,5 +81,5 @@ This API provides functionality for managing users, subjects, and groups.
    - **Methods**: `GET`
    - **Description**: 
         - `GET`: Create potential groups in db , while not adding duplicates
-    - **Expected Output**:
+   - **Expected Output**:
         - `GET`: Returns a list of group objects that are successfully created in the db .
